@@ -332,6 +332,11 @@ build: $(DEV_BUILD_TARGET)
 # This build will not trigger if no files where changed since the last build.
 build-release: $(RELEASE_BUILD_TARGETS)
 
+# Build release binaries for a specific GOOS and GOARCH into $(RELEASE_DIR)/$(GOOS)-$(GOARCH)/bin
+release-bins: FORCE
+	@mkdir -p $(release_dir)/$(GOOS)-$(GOARCH)/bin
+	env CGO_ENABLED=0 GOOS=$(GOOS) GOARCH=$(GOARCH) $(go_cmd) build $(release_build_flags) -o "$(release_dir)/$(GOOS)-$(GOARCH)/bin/" ./cmd/...
+
 # Build images (test-node-image or release-image).
 # This build will not trigger if no files where changed since the last build.
 build-image-%: $(BUILD_DIR)/%-image
