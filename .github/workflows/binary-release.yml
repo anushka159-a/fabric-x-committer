@@ -70,14 +70,18 @@ jobs:
       - name: Build and package binaries
         env:
           TARGET: ${{ matrix.os }}-${{ matrix.arch }}
-          RELEASE: ${{ needs.prepare.outputs.tag }}
-        run: ./scripts/create-binary-package.sh
+          TAG: ${{ needs.prepare.outputs.tag }}
+        run: |
+          # Build all the CMDs into release/<os>-<arch>/, the same folder used by the release images.
+          make "release/${TARGET}/committer"
+          # Pack the binaries, keeping the archive outside the binaries folder.
+          tar -czf "release/fabric-x-committer-${TARGET}-${TAG#v}.tar.gz" -C "release/${TARGET}" .
 
       - name: Upload build artifact
         uses: actions/upload-artifact@v4
         with:
           name: fabric-x-committer-${{ matrix.os }}-${{ matrix.arch }}
-          path: release/${{ matrix.os }}-${{ matrix.arch }}/fabric-x-committer-*.tar.gz
+          path: release/fabric-x-committer-*.tar.gz
           if-no-files-found: error
 
   release:
