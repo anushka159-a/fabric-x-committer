@@ -96,7 +96,7 @@ arch                ?= $(shell $(go_cmd) env GOARCH)
 multiplatform       ?= false
 env                 ?= env GOOS=$(os) GOARCH=$(arch)
 build_flags         ?= -buildvcs=false
-release_build_flags ?= $(build_flags) -ldflags '-w -s'
+release_build_flags ?= $(build_flags) -trimpath -ldflags '-w -s'
 test_flags          ?=
 proto_flags         ?=
 

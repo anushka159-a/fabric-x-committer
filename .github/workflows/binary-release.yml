@@ -74,14 +74,21 @@ jobs:
         run: |
           # Build all the CMDs into release/<os>-<arch>/, the same folder used by the release images.
           make "release/${TARGET}/committer"
-          # Pack the binaries, keeping the archive outside the binaries folder.
-          tar -czf "release/fabric-x-committer-${TARGET}-${TAG#v}.tar.gz" -C "release/${TARGET}" .
+          # Hash the binaries before packing so the SHAs are independent of tarball metadata.
+          (cd "release/${TARGET}" && sha256sum committer loadgen mock > "../fabric-x-committer-${TARGET}-${TAG#v}.sha256")
+          # Stage binaries + LICENSE for the archive; keeps release/<os>-<arch>/ clean for Docker image builds.
+          stage="release/stage-${TARGET}"
+          mkdir -p "${stage}"
+          cp "release/${TARGET}"/{committer,loadgen,mock} LICENSE "${stage}/"
+          tar -czf "release/fabric-x-committer-${TARGET}-${TAG#v}.tar.gz" -C "${stage}" .
 
       - name: Upload build artifact
         uses: actions/upload-artifact@v4
         with:
           name: fabric-x-committer-${{ matrix.os }}-${{ matrix.arch }}
-          path: release/fabric-x-committer-*.tar.gz
+          path: |
+            release/fabric-x-committer-*.tar.gz
+            release/fabric-x-committer-*.sha256
           if-no-files-found: error
 
   release:
@@ -110,5 +117,6 @@ jobs:
           prerelease: ${{ contains(needs.prepare.outputs.tag, '-') }}
           files: |
             dist/*.tar.gz
+            dist/*.sha256
             dist/checksums.txt
           fail_on_unmatched_files: true
