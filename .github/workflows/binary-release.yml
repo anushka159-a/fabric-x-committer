@@ -75,7 +75,8 @@ jobs:
           # Build all the CMDs into release/<os>-<arch>/, the same folder used by the release images.
           make "release/${TARGET}/committer"
           # Hash the binaries before packing so the SHAs are independent of tarball metadata.
-          (cd "release/${TARGET}" && sha256sum committer loadgen mock > "../fabric-x-committer-${TARGET}-${TAG#v}.sha256")
+          (cd "release/${TARGET}" && \
+            sha256sum committer loadgen mock > "../fabric-x-committer-${TARGET}-${TAG#v}.sha256")
           # Stage binaries + LICENSE for the archive; keeps release/<os>-<arch>/ clean for Docker image builds.
           stage="release/stage-${TARGET}"
           mkdir -p "${stage}"
